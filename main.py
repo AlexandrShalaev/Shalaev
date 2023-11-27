@@ -110,7 +110,10 @@ class All_data:
         for info in response:
             for i in info['games']:
                 try:
-                    event_url.append(i['event_url'])
+                    first_part_of_event = i['event_url'][:12]
+                    second_part_of_event = i['event_url'][-8:-1]
+                    sum_event = first_part_of_event + second_part_of_event
+                    event_url.append(sum_event)
                     score_home.append(i['score']['team_home'])
                     score_away.append(i['score']['team_away'])
                     start_time.append(str(datetime.fromtimestamp(i['start_time'])))
@@ -133,15 +136,18 @@ class All_data:
                         red_away.append('NULL')
                 except Exception:
                     pass
-
+        print(event_url)
         for i in event_url:
-            response_for_event = requests.get(f'https://myscore.club/api{i}menu/').json()
-            if 'route' in response_for_event['team_home'][0] or 'route' in response_for_event['team_away'][0]:
-                team_home_url.append(response_for_event['team_home'][0]['route'])
-                team_away_url.append(response_for_event['team_away'][0]['route'])
-            else:
-                team_home_url.append('NULL')
-                team_away_url.append('NULL')
+            try:
+                response_for_event = requests.get(f'https://myscore.club/api{i}/menu/').json()
+                if 'route' in response_for_event['team_home'][0] or 'route' in response_for_event['team_away'][0]:
+                    team_home_url.append(response_for_event['team_home'][0]['route'])
+                    team_away_url.append(response_for_event['team_away'][0]['route'])
+                else:
+                    team_home_url.append('NULL')
+                    team_away_url.append('NULL')
+            except Exception:
+                pass
         all_url = team_home + team_away
         all_team = team_home_url + team_away_url
         sql_query = list(zip(all_url, all_team))
@@ -151,10 +157,9 @@ class All_data:
         query_insert = list(
             zip(team_home_url, team_away_url, score_home, score_away, status, tournament_name, yellow_home, yellow_away,
                 red_home, red_away, start_time, team_home, team_away, coef_1, coef_2, coef_x, event_url))
-        # # print(query_insert)
+        print(query_insert)
         for i in range(len(query_insert)):
             self.execute_games_query(query_insert[i], db_name)
-        #     print(f'Yes {i} sir')
         #     for key in i.keys():
         #         print(key)
         # all_keys = list(k for d in info['games'] for k in d.keys())

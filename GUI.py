@@ -314,7 +314,7 @@ class Mygui(QMainWindow):
             req.append(query[0])
         connection.close()
 
-        return req[0]
+        return req[0] + '/'
 
 
 
